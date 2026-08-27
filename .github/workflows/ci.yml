@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: CI Pipeline with ChatOps
 
 on:
   push:
@@ -16,11 +16,25 @@ jobs:
       - name: Check HTML file
         run: |
           echo "Starting CI pipeline..."
-          echo "Checking project files..."
           ls -la
           test -f index.html
 
       - name: Build successful
         run: |
           echo "Website build completed successfully!"
-          echo "CI Pipeline finished."
+
+      - name: Slack Success Notification
+        if: success()
+        run: |
+          curl -X POST \
+          -H 'Content-type: application/json' \
+          --data '{"text":"✅ SUCCESS: CI Pipeline completed successfully!"}' \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Slack Failure Notification
+        if: failure()
+        run: |
+          curl -X POST \
+          -H 'Content-type: application/json' \
+          --data '{"text":"❌ FAILURE: CI Pipeline failed!"}' \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
